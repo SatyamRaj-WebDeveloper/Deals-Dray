@@ -36,15 +36,14 @@ const loginUser = async(req,res)=>{
         if(!UserName || !Password){
             return res.status(400).json({message:"Invalid Credentials, Both Fields are required"})
         }
-        const user = await User.findOne(UserName);
-        const validPassword = await bcrypt.compare(user.Password , Password)
+        const user = await User.findOne({UserName});
+        const validPassword = await bcrypt.compare(Password , user.Password)
         if(!user){
             return res.status(404).json({message:"Invlaid UserName, User Not Found"})
         }else if(!validPassword){
             return res.status(404).json({message:"Invalid Password"})
-        }else{
-            return res.status(200).json({message:"User Was Found" , data:{user}})
         }
+            return res.status(200).json({message:"User Was Found" , data:user})
     } catch (error) {
         return res.status(400).json({message:"LoginUser :: Function did not work"})
     }
