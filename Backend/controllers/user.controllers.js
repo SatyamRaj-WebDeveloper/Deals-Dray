@@ -89,8 +89,21 @@ const creatEmployee = async(req,res)=>{
     }
 }
 
+const getAllEmployee = async(req,res)=>{
+    try {
+        const employees = await employee.find()
+        if(!employees){
+            return res.status(404).json({message:"No employees found"})
+        }
+        return res.status(200).json({message:"Fetched Users Successfully" , data:employees})
+    } catch (error) {
+        return res.status(400).json({message:"Error fetching users",error})
+    }
+}
+
 export {
     registerUser,
     loginUser,
     creatEmployee,
+    getAllEmployee
 }
