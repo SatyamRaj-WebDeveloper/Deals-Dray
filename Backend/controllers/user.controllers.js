@@ -9,11 +9,12 @@ import bcrypt from 'bcrypt';
 
 const registerUser = async(req,res)=>{
     const {UserName,Password}=req.body;
+   
     try {
         if(!UserName || !Password){
             return res.status(404).json({message:" Username or Password are required"})
         }
-        const hashedPassword = bcrypt.hash(Password ,10)
+        const hashedPassword =await  bcrypt.hash(Password ,10)
         const newuser = new User({
             UserName,
             Password:hashedPassword,
@@ -22,7 +23,7 @@ const registerUser = async(req,res)=>{
         if(!newuser){
             console.log("New User Was not created")
         }else{
-            return res.status(201).json({message:"User was Created Successfully" , data:{newuser}})
+            return res.status(201).json({message:"User was Created Successfully" , data:newuser})
         }
     } catch (error) {
         return res.status(400).json({message:"RegisterUser :: Function did not work"})
