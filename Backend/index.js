@@ -5,6 +5,8 @@ import cors from 'cors';
 
 const PORT = 8000 || process.env.PORT;
 const app =express();
+
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 dotenv.config({
     path : './.env'

@@ -3,16 +3,16 @@ import path from 'path';
 import fs from 'fs'
 
 cloudinary.config({
-    cloud_name : process.env.CLOUDINARY_CLOUD_NAME ,
-    api_key : process.env.CLOUDINARY_API_KEY  ,
-    api_secret : process.env.CLOUDINARY_API_SECRET,
+    cloud_name : 'ddtzeeazz' ,
+    api_key : '344626612553335'  ,
+    api_secret : 'P557-6uWGWtjMXn99_BD3WU4A_U',
 })
 
 const uploadOnCloudinary = async(FilePath)=>{
     try {
         
         if(!FilePath) return null ;
-
+        
         const extname = path.extname(FilePath).toLowerCase();
         if (extname !== '.jpg' && extname !== '.jpeg' && extname !== '.png') {
             fs.unlinkSync(FilePath); 
