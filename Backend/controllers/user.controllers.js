@@ -56,19 +56,20 @@ const creatEmployee = async(req,res)=>{
         if(!Name||!Email|| !Mobile|| !Gender || !Course|| !Designation || !Image){
             return res.status(400).json({message:"All Fields are Required"});
         }
+        
         const existEmail = await employee.findOne({Email});
         const image_url = await uploadOnCloudinary(Image)
-
         if(!image_url){
-            console.log("UploadOnCloudinary from user Controller :: Did Not work");
+            return res.status(400).json({message:"Invalid File Format"});
         }
         // typeof Mobile === Number ? null : console.log("Invalid Mobile Number")
         if(validator.isEmail(Email)){
             console.log("valid Email")
-        }else if(existEmail){
-             return res.status(400).json({message:"User Already Exist"})
         }else{
             return res.status(400).json({message:"Invalid Email"})
+        }
+         if(existEmail){
+             return res.status(400).json({message:"User Already Exist"})
         }
         const emp = new employee({
             Name ,
@@ -93,11 +94,17 @@ const creatEmployee = async(req,res)=>{
 
 const getAllEmployee = async(req,res)=>{
     try {
-        const employees = await employee.find()
-        if(!employees){
+        let page = Number(req.query.page) || 1;
+        let limit = Number(req.query.limit) || 10;
+        let skip = (page - 1) * limit ;
+        const employees = await employee.find().skip(skip).limit(limit)
+
+         if(!employees || employees.length === 0){
             return res.status(404).json({message:"No employees found"})
         }
-        return res.status(200).json({message:"Fetched Users Successfully" , data:employees})
+        const totalEmployees = await employee.countDocuments();
+
+        return res.status(200).json({message:"Fetched Users Successfully" , data:employees , currentPage : page , totalPages: Math.ceil(totalEmployees / limit), totalEmployees })
     } catch (error) {
         return res.status(400).json({message:"Error fetching users",error})
     }
@@ -168,6 +175,10 @@ const editUser = async(req,res)=>{
         return res.status(400).json({message:"Edit User :: Function did not work" , error:{error}})
     }
 }
+
+
+
+
 export {
     registerUser,
     loginUser,

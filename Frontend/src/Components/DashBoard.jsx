@@ -1,15 +1,21 @@
 import React, { useState } from 'react'
 import { useEffect } from 'react'
 import axios from 'axios';
-import { IoMdCloseCircleOutline } from "react-icons/io";
+import {useNavigate} from 'react-router-dom'
 
 const DashBoard = () => {
+  const navigate = useNavigate()
   const [users , setusers] = useState([])
   const [count ,setcount] = useState(0)
   const [clicked,setclicked] = useState(false)
   const [gender ,setgender] = useState('')
   const[editclicked,seteditclicked] = useState(false)
   const [userId,setuserId] = useState('')
+  const [usermsg ,setusermsg] = useState(false)
+  const [fileformat,setfileformat] = useState(false)
+  const [Page , setPage] = useState(1)
+
+
 
   const createEmployee = (e)=>{
        e.preventDefault()
@@ -23,12 +29,15 @@ const DashBoard = () => {
        formdata.append('Image', e.target[7].files[0])
 
        axios.post('http://localhost:8000/api/v1/users/createEmployee' ,formdata)
-       .then(response => {
-         console.log(response.data)
+       .then(()=> {
          setclicked(false)
          getUsers()
       })
-       .catch((error) =>console.log(error))
+       .catch((error) =>{
+       if(error.response.data.message === "User Already Exist") setusermsg(true)
+        if(error.response.data.message === "Invalid File Format") 
+        setfileformat(true)
+       })
       
      
   }
@@ -41,6 +50,11 @@ const DashBoard = () => {
       .catch(error =>console.log(error.message))
       getUsers()
   }
+
+  const logout =()=>{
+    navigate('/login')
+  }
+
 
   const editUser=(e)=>{
     e.preventDefault()
@@ -64,7 +78,7 @@ const DashBoard = () => {
   }
 
   const getUsers =()=>{
-    axios.get('http://localhost:8000/api/v1/users/getAllEmployees')
+    axios.get(`http://localhost:8000/api/v1/users/getAllEmployees?page=${Page}&limit=10`)
     .then((response)=>{
       const data = response.data.data;
     setusers(data)
@@ -80,12 +94,15 @@ const DashBoard = () => {
 
   return (
     <>
-    <div className='w-screen h-screen relative flex justify-center items-center bg-gray-200'>
+    <div className='w-screen h-screen relative flex justify-center items-center '>
         <div className={`${clicked ? 'blur-lg':null}  ${editclicked ? 'blur-lg':null} w-fit h-fit border border-gray-500 rounded-xl px-2 shadow-lg bg-white`}>
            <div>
             <div className='flex justify-around items-center border-b border-gray-500 py-4'>
               <h1 className='text-xl font-medium '>Home</h1>
               <h1 className='text-xl font-medium '>Employee List</h1>
+              <button className='w-fit h-fit px-3 py-2 bg-fuchsia-500 text-white hover:text-fuchsia-500 hover:bg-white hover:ring-1 hover:ring-fuchsia-500 transition-all  rounded-lg ' onClick={()=>logout()}>
+                Logout
+              </button>
             </div>
             <div className='flex  justify-end items-center gap-10 border-b border-gray-500 py-2'>
               {
@@ -114,7 +131,7 @@ const DashBoard = () => {
               <label className='text-lg font-Roboto font-medium underline'>Image</label>
               {
                 users.map((user)=>
-                  <img src={user.Image} alt="user's Image "  key={user._id} className='w-10 h-10 mt-8 rounded-full'/>
+                  <img src={user.Image} alt="user's Image "  key={user._id} className='w-10 h-10 mt-8 rounded-full hover:scale-125 hover:shadow-xl hover:transition-all'/>
                 )
               }
             </div>
@@ -170,7 +187,7 @@ const DashBoard = () => {
               <label className='text-lg font-Roboto font-medium underline'>Created At</label>
               {
                users.map((user) => {
-                     const createdAt = new Date(user.createdAt).toString().split('T')[0]; 
+                     const createdAt = new Date(user.createdAt).toDateString().split('T')[0]; 
                          return (
                     <li className="list-none mt-14" key={user._id}>
                       {createdAt}
@@ -179,12 +196,12 @@ const DashBoard = () => {
                })
                  }
             </div>
-            <div className='flex flex-col h-fit w-fit px-3  justify-center items-center' >
+            <div className='flex flex-col h-fit w-fit px-3  justify-center items-center mb-4' >
               <label className='text-lg font-Roboto font-medium underline'>Actions</label>
               {
                 users.map((user)=>(
                    
-                    <div className=' flex gap-4 mt-12' key={user._id}>
+                    <div className=' flex gap-4 mt-12 ' key={user._id}>
                     <button   className='mt-4 cursor-pointer hover:text-blue-500 hover:underline font-light' onClick={(e)=>deleteUser(e,user._id)} >Delete</button>
                     <button  className='mt-4 cursor-pointer hover:text-blue-500 hover:underline font-light' onClick={()=>{
                       setuserId(user._id)
@@ -270,8 +287,8 @@ const DashBoard = () => {
 
 
        { clicked&&
-       <div className='absolute bg-white top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] z-10 rounded-xl'>
-          <form onSubmit={createEmployee} className='px-6 py-4 border-2 border-gray-400 rounded-xl gap-8' method='POST' encType='multipart/form-data'>
+       <div className={` absolute bg-white top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] z-10 rounded-xl`}>
+          <form onSubmit={createEmployee} className='px-6 py-4 border-2 border-gray-400 relative rounded-xl gap-8' method='POST' encType='multipart/form-data'>
 
            <div className='flex sm:flex-row flex-col justify-center items-center w-fit h-fit '>
 
@@ -285,6 +302,7 @@ const DashBoard = () => {
             <label htmlFor="Name" className='text-md font-Roboto font-medium '>Email :</label>
             <input type="text" name='Email' className='outline-none px-3 py-2 rounded-lg w-30 border' placeholder='Email' />
             </div>
+            {usermsg && <span className='text-red-500 font-medium '>User Already Exist.</span>}
 
             <div className='flex gap-4 justify-center items-center'>
             <label htmlFor="Name" className='text-md font-Roboto font-medium '>Mobile No. :</label>
@@ -324,8 +342,9 @@ const DashBoard = () => {
             </div>
 
             <div>
-              <label htmlFor="Image"  className='text-md font-Roboto font-medium ' >Upload Image : </label>
+              <label htmlFor="Image"  className='text-md font-Roboto font-medium ' >Upload Image : <i>(.jpg/.png)</i></label>
               <input type="file" name='Image' />
+              {fileformat && <span className='text-red-500 font-medium text-small'>Invalid File Format</span>}
             </div> 
             </div>
             </div>
@@ -333,7 +352,15 @@ const DashBoard = () => {
             <IoMdCloseCircleOutline className='absolute top-6 right-4 sm:right-10  text-xl ' title='Close' onClick={()=>setclicked(false)}/>
           </form>
         </div>}
+
     </div>
+        <div className='text-center text-xl font-medium '>
+        <button className='w-fit h-fit px-3 py-2 bg-fuchsia-500 text-white hover:text-fuchsia-500 hover:bg-white hover:ring-1 hover:ring-fuchsia-500 transition-all mr-4 mb-10' onClick={()=>setPage(prev=>prev-1)} >Previous</button>
+          Page : {Page}
+          <button className='w-fit h-fit px-3 py-2 bg-fuchsia-500 text-white hover:text-fuchsia-500 hover:bg-white hover:ring-1 hover:ring-fuchsia-500 transition-all ml-4 mb-10' onClick={()=>setPage(prev => prev+1)}>
+            Next 
+          </button>
+        </div>
     </>
   )
 }
