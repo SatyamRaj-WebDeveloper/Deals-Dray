@@ -5,11 +5,11 @@ import { FaEye } from "react-icons/fa6";
 import { useState } from 'react';
 import { FaEyeSlash } from "react-icons/fa6";
 import axios from 'axios';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 
 const SignUp = () => {
     const [clicked,setclicked] = useState('Password');
-
+    const navigate = useNavigate()
 
     const createUser =(e)=>{
         e.preventDefault();
@@ -18,8 +18,11 @@ const SignUp = () => {
             Password : e.target[1].value,
         }
          axios.post('http://localhost:8000/api/v1/users/registerUser',formData)
-        .then((response)=>console.log(response.data))
+        .then(()=>
+        navigate('/login')
+        )
         .catch((error)=>console.log("ERROR :: fetching data" , error))
+
 
     }
 
